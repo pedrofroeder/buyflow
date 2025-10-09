@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../../contexts/CartContext";
 import { BsTrash, BsArrowLeft, BsPlus, BsDash } from "react-icons/bs";
@@ -6,51 +6,61 @@ import { Button } from "../../components/Button";
 import toast from "react-hot-toast";
 
 export function Cart() {
-  const { cart, removeItemCart, updateQuantity, clearCart, total } = useContext(CartContext);
+  const { cart, removeItemCart, updateQuantity, clearCart, total } =
+    useContext(CartContext);
 
-  const subtotal = total;
-  const shipping = 50.00;
+  const shipping = 50.0;
   const discount = 0;
-  const finalTotal = subtotal + shipping - discount;
 
-  function handleRemoveItem(id: number, title: string) {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="font-semibold text-gray-900">Remover do carrinho?</p>
-            <p className="text-sm text-gray-600 mt-1">
-              Deseja remover "<strong>{title}</strong>"?
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                removeItemCart(id);
-                toast.dismiss(t.id);
-                toast.success("Produto removido!");
-              }}
-              className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition"
-            >
-              Remover
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium transition"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: 10000,
-        position: "top-center",
-      }
-    );
-  }
+  const { subtotal, finalTotal } = useMemo(() => {
+    const sub = total;
+    const final = sub + shipping - discount;
+    return { subtotal: sub, finalTotal: final };
+  }, [total, shipping, discount]);
 
-  function handleClearCart() {
+  const handleRemoveItem = useCallback(
+    (id: number, title: string) => {
+      toast(
+        (t) => (
+          <div className="flex flex-col gap-3">
+            <div>
+              <p className="font-semibold text-gray-900">
+                Remover do carrinho?
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                Deseja remover "<strong>{title}</strong>"?
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  removeItemCart(id);
+                  toast.dismiss(t.id);
+                  toast.success("Produto removido!");
+                }}
+                className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition"
+              >
+                Remover
+              </button>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          duration: 10000,
+          position: "top-center",
+        }
+      );
+    },
+    [removeItemCart]
+  );
+
+  const handleClearCart = useCallback(() => {
     toast(
       (t) => (
         <div className="flex flex-col gap-3">
@@ -85,7 +95,7 @@ export function Cart() {
         position: "top-center",
       }
     );
-  }
+  }, [clearCart, cart.length]);
 
   if (cart.length === 0) {
     return (
@@ -113,14 +123,14 @@ export function Cart() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         <div className="mb-6 sm:mb-8">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition"
           >
             <BsArrowLeft size={16} />
             <span className="text-sm font-medium">Voltar para loja</span>
           </Link>
-          
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
@@ -130,7 +140,7 @@ export function Cart() {
                 {cart.length} {cart.length === 1 ? "produto" : "produtos"}
               </p>
             </div>
-            
+
             <button
               onClick={handleClearCart}
               className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
@@ -149,10 +159,7 @@ export function Cart() {
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-4 sm:p-5"
               >
                 <div className="flex gap-4">
-                  <Link 
-                    to={`/product/${item.id}`} 
-                    className="flex-shrink-0"
-                  >
+                  <Link to={`/product/${item.id}`} className="flex-shrink-0">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-lg overflow-hidden bg-gray-100">
                       <img
                         src={item.thumbnail}
@@ -180,7 +187,9 @@ export function Cart() {
                     <div className="flex items-center justify-between mt-3 sm:mt-4 gap-3">
                       <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200">
                         <button
-                          onClick={() => updateQuantity(item.id, item.amount - 1)}
+                          onClick={() =>
+                            updateQuantity(item.id, item.amount - 1)
+                          }
                           className="p-2 sm:p-2.5 hover:bg-gray-100 transition rounded-l-lg"
                           aria-label="Diminuir quantidade"
                         >
@@ -190,7 +199,9 @@ export function Cart() {
                           {item.amount}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.amount + 1)}
+                          onClick={() =>
+                            updateQuantity(item.id, item.amount + 1)
+                          }
                           className="p-2 sm:p-2.5 hover:bg-gray-100 transition rounded-r-lg"
                           aria-label="Aumentar quantidade"
                         >
@@ -264,8 +275,8 @@ export function Cart() {
                 </Button>
 
                 <Link to="/">
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     className="w-full flex items-center justify-center gap-2 py-3"
                   >
                     <BsArrowLeft size={16} />

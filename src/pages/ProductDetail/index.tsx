@@ -18,24 +18,37 @@ export function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState<string>("");
 
   useEffect(() => {
-    async function loadProduct() {
-      if (!id) return;
+    if (!id) return;
 
+    let isMounted = true;
+
+    async function loadProduct() {
       try {
         setLoading(true);
         const data = await getProductById(Number(id));
-        setProduct(data);
-        setSelectedImage(data.thumbnail); // Imagem inicial
-        setError("");
+
+        if (isMounted) {
+          setProduct(data);
+          setSelectedImage(data.thumbnail);
+          setError("");
+        }
       } catch (err) {
-        setError("Erro ao carregar produto");
-        console.error(err);
+        if (isMounted) {
+          setError("Erro ao carregar produto");
+          console.error(err);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     loadProduct();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   function handleAddToCart() {
@@ -71,75 +84,48 @@ export function ProductDetail() {
     );
   }
 
+  const originalPrice =
+    product.discountPercentage > 0
+      ? (product.price / (1 - product.discountPercentage / 100)).toFixed(2)
+      : null;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition"
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 font-medium transition text-sm sm:text-base"
       >
-        <BsArrowLeft size={20} />
+        <BsArrowLeft size={18} />
         Voltar
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
-            <img
-              src={selectedImage}
-              alt={product.title}
-              className="w-full h-96 object-contain"
-            />
-          </div>
-
-          {product.images && product.images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(image)}
-                  className={`flex-shrink-0 border-2 rounded-lg overflow-hidden transition ${
-                    selectedImage === image
-                      ? "border-blue-600"
-                      : "border-gray-200 hover:border-gray-400"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`${product.title} - ${index + 1}`}
-                    className="w-20 h-20 object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:order-2">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full">
               {product.category}
             </span>
             {product.brand && (
-              <span className="text-gray-500 text-sm">
+              <span className="text-gray-500 text-xs sm:text-sm">
                 Marca: <strong>{product.brand}</strong>
               </span>
             )}
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
             {product.title}
           </h1>
 
           <div className="flex items-center gap-4 mb-4">
             <div className="flex items-center gap-1">
-              <span className="text-yellow-500 text-lg">⭐</span>
-              <span className="font-semibold text-gray-900">
+              <span className="text-yellow-500 text-base">⭐</span>
+              <span className="font-semibold text-gray-900 text-sm sm:text-base">
                 {product.rating}
               </span>
-              <span className="text-gray-500 text-sm">/5</span>
+              <span className="text-gray-500 text-xs sm:text-sm">/5</span>
             </div>
             <div
-              className={`text-sm font-medium ${
+              className={`text-xs sm:text-sm font-medium ${
                 product.stock > 10 ? "text-green-600" : "text-orange-600"
               }`}
             >
@@ -149,52 +135,48 @@ export function ProductDetail() {
             </div>
           </div>
 
-          <div className="mb-6">
-            {product.discountPercentage > 0 && (
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-gray-400 line-through text-lg">
-                  R${" "}
-                  {(
-                    product.price /
-                    (1 - product.discountPercentage / 100)
-                  ).toFixed(2)}
+          <div className="mb-4">
+            {product.discountPercentage > 0 && originalPrice && (
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-gray-400 line-through text-base">
+                  R$ {originalPrice}
                 </span>
-                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded">
                   -{product.discountPercentage.toFixed(0)}% OFF
                 </span>
               </div>
             )}
-            <p className="text-4xl font-bold text-green-600">
+            <p className="text-3xl sm:text-4xl font-bold text-green-600">
               R$ {product.price.toFixed(2)}
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
-              Sobre o produto
-            </h2>
-            <p className="text-gray-600 leading-relaxed">
-              {product.description}
             </p>
           </div>
 
           <Button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors duration-200 flex items-center justify-center gap-3 ${
+            className={`w-full py-2.5 px-4 rounded-md font-semibold text-base transition-colors duration-200 flex items-center justify-center gap-2 ${
               product.stock === 0
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
-            <BsCartPlus size={24} />
+            <BsCartPlus size={20} />
             {product.stock === 0
               ? "Produto indisponível"
               : "Adicionar ao carrinho"}
           </Button>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <ul className="space-y-2 text-sm text-gray-600">
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+            <h2 className="text-base font-semibold text-gray-900 mb-2">
+              Sobre o produto
+            </h2>
+            <p className="text-gray-600 leading-relaxed text-sm">
+              {product.description}
+            </p>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <ul className="space-y-2 text-xs text-gray-600">
               <li className="flex items-center gap-2">
                 <span className="text-green-600">✓</span>
                 Entrega rápida e segura
@@ -209,6 +191,38 @@ export function ProductDetail() {
               </li>
             </ul>
           </div>
+        </div>
+
+        <div className="lg:order-1">
+          <div className="bg-white rounded-lg shadow-md p-3 mb-3">
+            <img
+              src={selectedImage}
+              alt={product.title}
+              className="w-full max-h-80 sm:max-h-96 object-contain"
+            />
+          </div>
+
+          {product.images && product.images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto justify-center">
+              {product.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(image)}
+                  className={`flex-shrink-0 border-2 rounded-lg overflow-hidden transition ${
+                    selectedImage === image
+                      ? "border-blue-600"
+                      : "border-gray-200 hover:border-gray-400"
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`${product.title} - ${index + 1}`}
+                    className="w-16 h-16 object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
