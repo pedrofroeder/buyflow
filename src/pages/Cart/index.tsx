@@ -6,8 +6,7 @@ import { Button } from "../../components/Button";
 import toast from "react-hot-toast";
 
 export function Cart() {
-  const { cart, removeItemCart, updateQuantity, clearCart, total } =
-    useContext(CartContext);
+  const { cart, removeItemCart, updateQuantity, clearCart, total } = useContext(CartContext);
 
   const shipping = 50.0;
   const discount = 0;
@@ -149,7 +148,7 @@ export function Cart() {
 
             <button
               onClick={handleClearCart}
-              className="self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
+              className="cursor-pointer self-start sm:self-auto inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
             >
               <BsTrash size={16} />
               Limpar carrinho
@@ -196,7 +195,7 @@ export function Cart() {
                           onClick={() =>
                             updateQuantity(item.id, item.amount - 1)
                           }
-                          className="p-2 sm:p-2.5 hover:bg-gray-100 transition rounded-l-lg"
+                          className="cursor-pointer p-2 sm:p-2.5 hover:bg-gray-100 transition rounded-l-lg"
                           aria-label="Diminuir quantidade"
                         >
                           <BsDash size={16} className="text-gray-700" />
@@ -208,7 +207,7 @@ export function Cart() {
                           onClick={() =>
                             updateQuantity(item.id, item.amount + 1)
                           }
-                          className="p-2 sm:p-2.5 hover:bg-gray-100 transition rounded-r-lg"
+                          className="cursor-pointer p-2 sm:p-2.5 hover:bg-gray-100 transition rounded-r-lg"
                           aria-label="Aumentar quantidade"
                         >
                           <BsPlus size={16} className="text-gray-700" />
@@ -221,7 +220,7 @@ export function Cart() {
                         </p>
                         <button
                           onClick={() => handleRemoveItem(item.id, item.title)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 transition p-2 rounded-lg"
+                          className="cursor-pointer text-red-500 hover:text-red-700 hover:bg-red-50 transition p-2 rounded-lg"
                           title="Remover produto"
                           aria-label="Remover produto"
                         >

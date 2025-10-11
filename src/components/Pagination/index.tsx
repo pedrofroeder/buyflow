@@ -30,7 +30,7 @@ export function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition whitespace-nowrap"
+        className="cursor-pointer flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition whitespace-nowrap"
         aria-label="Página anterior"
       >
         <BsChevronLeft size={14} />
@@ -54,7 +54,7 @@ export function Pagination({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`px-3 py-2 text-sm font-medium rounded-lg transition ${
+            className={`cursor-pointer px-3 py-2 text-sm font-medium rounded-lg transition ${
               currentPage === page
                 ? "bg-blue-600 text-white"
                 : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
@@ -70,8 +70,9 @@ export function Pagination({
               <span className="px-2 text-gray-500">...</span>
             )}
             <button
+
               onClick={() => onPageChange(totalPages)}
-              className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              className="cursor-pointer px-3 py-2 text-sm font-medium__ bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
             >
               {totalPages}
             </button>
@@ -85,7 +86,7 @@ export function Pagination({
         className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition whitespace-nowrap"
         aria-label="Próxima página"
       >
-        <span className="hidden sm:inline">Próxima</span>
+        <span className="cursor-pointer hidden sm:inline">Próxima</span>
         <BsChevronRight size={14} />
       </button>
     </div>

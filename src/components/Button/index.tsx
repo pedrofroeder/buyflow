@@ -15,7 +15,7 @@ export function Button({ children, variant = "primary", className = "", ...rest 
 
   return (
     <button
-      className={`${variantClasses[variant]} text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 ${className}`}
+      className={`${variantClasses[variant]} cursor-pointer text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 ${className}`}
       {...rest}
     >
       {children}
