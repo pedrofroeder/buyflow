@@ -1,7 +1,7 @@
 const BASE_URL = "https://dummyjson.com";
 
-export async function getProducts() {
-  const response = await fetch(`${BASE_URL}/products`);
+export async function getProducts(limit = 20, skip = 0) {
+  const response = await fetch(`${BASE_URL}/products?limit=${limit}&skip=${skip}`);
   if (!response.ok) throw new Error("Erro ao buscar produtos");
   return response.json();
 }

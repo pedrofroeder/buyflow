@@ -19,43 +19,42 @@ export function Cart() {
 
 
     const handleRemoveItem = useCallback((id: number, title: string) => {
-        toast.dismiss(); 
-        
-        toast(
-            (t) => (
-                <div className="flex flex-col gap-3">
-                    <div>
-                        <p className="font-semibold text-gray-900">Remover do carrinho?</p>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Deseja remover "<strong>{title}</strong>"?
-                        </p>
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => {
-                                removeItemCart(id);
-                                toast.dismiss(t.id);
-                                toast.success("Produto removido!");
-                            }}
-                            className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition"
-                        >
-                            Remover
-                        </button>
-                        <button
-                            onClick={() => toast.dismiss(t.id)}
-                            className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium transition"
-                        >
-                            Cancelar
-                        </button>
-                    </div>
+    toast.dismiss();
+    
+    setTimeout(() => {
+        toast((t) => (
+            <div className="flex flex-col gap-3 min-w-[280px]">
+                <div>
+                    <p className="font-semibold text-gray-900">Remover do carrinho?</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                        Deseja remover "<strong>{title}</strong>"?
+                    </p>
                 </div>
-            ),
-            {
-                duration: 10000,
-                position: "top-center",
-            }
-        );
-    }, [removeItemCart]);
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            removeItemCart(id);
+                            toast.dismiss(t.id);
+                            toast.success("Produto removido!");
+                        }}
+                        className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition touchscreen:active:scale-95"
+                    >
+                        Remover
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium transition touchscreen:active:scale-95"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: Infinity, 
+            position: 'top-center',
+        });
+    }, 100);
+}, [removeItemCart]);
 
     const handleClearCart = useCallback(() => {
         toast.dismiss(); 
