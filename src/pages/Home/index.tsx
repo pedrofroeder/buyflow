@@ -1,10 +1,10 @@
-import { useEffect, useState, useContext, useMemo } from "react";
+import { useEffect, useState, useContext, useMemo, useCallback } from "react";
 import { getProducts, getCategories } from "../../services/api";
 import { CartContext } from "../../contexts/CartContext";
 import { ProductCard } from "../../components/ProductCard";
 import { SearchBar } from "../../components/SearchBar";
 import { Pagination } from "../../components/Pagination";
-import { BsFire, BsStar, BsTag } from "react-icons/bs";
+import { BsFire, BsStar, BsTag, BsFilter, BsXCircle } from "react-icons/bs";
 import toast from "react-hot-toast";
 import type { Product, Category } from "../../types";
 import { PRODUCT_FILTERS } from "../../constants/products";
@@ -15,31 +15,57 @@ export function Home() {
   const { addItemCart } = useContext(CartContext);
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
 
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const handleAddToCart = useCallback(
+    (product: Product) => {
+      addItemCart(product);
+      toast.success(`${product.title} adicionado ao carrinho!`);
+    },
+    [addItemCart]
+  );
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm("");
+    setSelectedCategory("");
+    setIsFilterOpen(false);
+  }, []);
+
+  const handleCategoryChange = useCallback((slug: string) => {
+    setSelectedCategory(slug);
+    setIsFilterOpen(false);
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
     async function loadProducts() {
+      setLoading(true);
+      setError("");
       try {
-        setLoading(true);
         const skip = (currentPage - 1) * ITEMS_PER_PAGE;
         const data = await getProducts(ITEMS_PER_PAGE, skip);
 
         if (isMounted) {
           setProducts(data.products);
           setTotalProducts(data.total);
-          setError("");
         }
       } catch (err) {
         if (isMounted) {
-          setError("Erro ao carregar produtos");
+          setError("Erro ao carregar produtos. Por favor, tente novamente.");
           console.error(err);
         }
       } finally {
@@ -58,8 +84,8 @@ export function Home() {
   useEffect(() => {
     async function loadCategories() {
       try {
-        const categories = await getCategories();
-        setCategories(categories);
+        const categoriesData = await getCategories();
+        setCategories(categoriesData);
       } catch (err) {
         console.error("Erro ao carregar categorias:", err);
       }
@@ -120,16 +146,9 @@ export function Home() {
 
   const totalPages = Math.ceil(totalProducts / ITEMS_PER_PAGE);
   const hasFilters = selectedCategory || searchTerm;
-
-  function handleAddToCart(product: Product) {
-    addItemCart(product);
-    toast.success(`${product.title} adicionado ao carrinho!`);
-  }
-
-  function handlePageChange(page: number) {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  const currentCategoryName = selectedCategory
+    ? categories.find((c) => c.slug === selectedCategory)?.name || "Produtos"
+    : "Todos os Produtos";
 
   if (loading) {
     return (
@@ -160,32 +179,81 @@ export function Home() {
     );
   }
 
+  const FilterSidebarContent = (
+    <div className="p-4 lg:p-0">
+      <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <BsFilter className="inline-block mr-2" size={18} /> Filtrar por
+        Categoria
+      </h3>
+      <ul className="space-y-2">
+        <li>
+          <button
+            onClick={() => handleCategoryChange("")}
+            className={`w-full text-left py-2 px-3 rounded-lg transition text-sm ${
+              !selectedCategory
+                ? "bg-blue-600 text-white font-semibold shadow-md"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            Todas as categorias
+          </button>
+        </li>
+        {categoriesWithProducts.map((category) => (
+          <li key={category.slug}>
+            <button
+              onClick={() => handleCategoryChange(category.slug)}
+              className={`w-full text-left py-2 px-3 rounded-lg transition text-sm ${
+                selectedCategory === category.slug
+                  ? "bg-blue-600 text-white font-semibold shadow-md"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              {category.name}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {hasFilters && (
+        <button
+          onClick={handleClearFilters}
+          className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition text-sm font-medium"
+        >
+          <BsXCircle size={16} /> Limpar Filtros
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16">
-          <div className="max-w-3xl">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-3 leading-tight">
-              Encontre os Melhores Produtos
-            </h1>
-            <p className="text-base sm:text-lg text-blue-100 mb-6">
-              Ofertas incríveis com os melhores preços. Aproveite!
-            </p>
-            <SearchBar value={searchTerm} onChange={setSearchTerm} />
+      <header className="bg-blue-600 text-white shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl mb-4 md:mb-0">
+              <h1 className="text-3xl font-extrabold leading-tight">
+                Marketplace Pro
+              </h1>
+              <p className="text-base text-blue-100">
+                A melhor seleção de produtos para você.
+              </p>
+            </div>
+            <div className="w-full md:w-96">
+              <SearchBar value={searchTerm} onChange={setSearchTerm} />
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
         {featuredProducts.length > 0 && !hasFilters && currentPage === 1 && (
-          <section className="py-6 sm:py-8 lg:py-10">
-            <div className="flex items-center gap-2 mb-4">
-              <BsStar className="text-yellow-500" size={24} />
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <section className="mb-10 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <BsStar className="text-yellow-500" size={28} />
+              <h2 className="text-2xl font-extrabold text-gray-900">
                 Produtos em Destaque
               </h2>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {featuredProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -198,61 +266,31 @@ export function Home() {
           </section>
         )}
 
-        {bestDeals.length > 0 && !hasFilters && currentPage === 1 && (
-          <section className="py-6 sm:py-8 border-t border-gray-200">
-            <div className="flex items-center gap-2 mb-4">
-              <BsFire className="text-red-500" size={24} />
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Ofertas Imperdíveis
-              </h2>
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+          <aside className="hidden lg:block lg:col-span-3 xl:col-span-2">
+            <div className="sticky top-4 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+              {FilterSidebarContent}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {bestDeals.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
-          </section>
-        )}
+          </aside>
 
-        <section className="py-6 sm:py-8 border-t border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <BsTag className="text-blue-600" size={24} />
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {selectedCategory
-                ? categories.find((c) => c.slug === selectedCategory)?.name ||
-                  "Produtos"
-                : "Todos os Produtos"}
-            </h2>
-          </div>
+          <div className="lg:col-span-9 xl:col-span-10">
+            <div className="flex items-center justify-between mb-6 pb-2 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <BsTag className="text-blue-600" size={24} />
+                <h2 className="text-xl font-bold text-gray-900">
+                  {currentCategoryName}
+                </h2>
+              </div>
 
-          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <label
-                htmlFor="category-filter"
-                className="block text-sm font-medium text-gray-700 mb-1"
+              <button
+                onClick={() => setIsFilterOpen(true)}
+                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100 transition text-sm font-medium shadow-sm"
               >
-                Filtrar por categoria:
-              </label>
-              <select
-                id="category-filter"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full sm:w-auto min-w-[200px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 text-sm font-medium shadow-sm"
-              >
-                <option value="">Todas as categorias</option>
-                {categoriesWithProducts.map((category) => (
-                  <option key={category.slug} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                <BsFilter size={16} /> Filtros
+              </button>
             </div>
 
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm mb-6">
               {searchTerm && (
                 <span>
                   Resultados para "<strong>{searchTerm}</strong>" •{" "}
@@ -262,48 +300,98 @@ export function Home() {
               {filteredProducts.length === 1
                 ? "produto encontrado"
                 : "produtos encontrados"}
+              {hasFilters && (
+                <button
+                  onClick={handleClearFilters}
+                  className="text-blue-600 hover:text-blue-800 transition ml-3 underline text-xs font-semibold"
+                >
+                  (Limpar tudo)
+                </button>
+              )}
             </p>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-10 bg-gray-50 rounded-xl">
-              <div className="text-5xl mb-3">🔍</div>
-              <p className="text-gray-600 text-base mb-1">
-                Nenhum produto encontrado
-              </p>
-              <p className="text-gray-500 text-sm mb-4">
-                Tente ajustar seus filtros ou buscar por outro termo
-              </p>
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("");
-                }}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
-              >
-                Limpar filtros
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                />
+              ))}
             </div>
-          )}
 
-          {!hasFilters && filteredProducts.length > 0 && totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          )}
-        </section>
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-16 mt-4 bg-white rounded-xl border border-gray-200 shadow-md">
+                <div className="text-6xl mb-4">🤷‍♂️</div>
+                <p className="text-gray-700 text-xl font-semibold mb-2">
+                  Nenhum resultado encontrado
+                </p>
+                <p className="text-gray-500 text-base mb-6">
+                  Parece que não há produtos para os filtros selecionados.
+                </p>
+                <button
+                  onClick={handleClearFilters}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-md font-semibold shadow-md"
+                >
+                  Limpar todos os filtros
+                </button>
+              </div>
+            )}
+
+            {!hasFilters && filteredProducts.length > 0 && totalPages > 1 && (
+              <div className="mt-10 pt-6 border-t border-gray-200">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+
+            {bestDeals.length > 0 && !hasFilters && currentPage === 1 && (
+              <section className="mt-12 pt-8 border-t border-gray-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <BsFire className="text-red-500" size={28} />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    🔥 Ofertas para você
+                  </h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                  {bestDeals.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <div
+        className={`fixed inset-0 z-50 transform transition-transform duration-300 lg:hidden ${
+          isFilterOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50"
+          onClick={() => setIsFilterOpen(false)}
+        ></div>
+        <div className="fixed right-0 top-0 bottom-0 w-80 bg-white shadow-2xl p-6 overflow-y-auto">
+          <div className="flex justify-between items-center pb-4 mb-4 border-b border-gray-200">
+            <h3 className="text-xl font-bold text-gray-900">Filtros</h3>
+            <button
+              onClick={() => setIsFilterOpen(false)}
+              className="text-gray-500 hover:text-gray-700 transition"
+            >
+              <BsXCircle size={24} />
+            </button>
+          </div>
+          {FilterSidebarContent}
+        </div>
       </div>
     </div>
   );
