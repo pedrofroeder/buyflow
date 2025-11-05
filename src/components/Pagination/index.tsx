@@ -12,7 +12,7 @@ export function Pagination({
   onPageChange,
 }: PaginationProps) {
   const pages = [];
-  const maxVisiblePages = window.innerWidth < 640 ? 3 : 5;
+  const maxVisiblePages = window.innerWidth < 640 ? 4 : 5;
 
   let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -42,7 +42,7 @@ export function Pagination({
           <>
             <button
               onClick={() => onPageChange(1)}
-              className="cursor-pointer px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              className="cursor-pointer min-w-[36px] sm:min-w-[40px] px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
             >
               1
             </button>
@@ -54,7 +54,7 @@ export function Pagination({
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`cursor-pointer px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition ${
+            className={`cursor-pointer min-w-[36px] sm:min-w-[40px] px-2 sm:px-3 py-2 text-sm font-medium rounded-lg transition ${
               currentPage === page
                 ? "bg-blue-600 text-white"
                 : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
@@ -71,7 +71,7 @@ export function Pagination({
             )}
             <button
               onClick={() => onPageChange(totalPages)}
-              className="cursor-pointer px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              className="cursor-pointer min-w-[36px] sm:min-w-[40px] px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
             >
               {totalPages}
             </button>

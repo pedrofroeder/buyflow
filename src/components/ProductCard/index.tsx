@@ -17,7 +17,7 @@ export function ProductCard({ product, onAddToCart, variant = 'default' }: Produ
     : "bg-white";
 
   return (
-    <div className={`${cardClasses} rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group`}>
+    <div className={`${cardClasses} rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full`}>
       <div className="relative overflow-hidden">
         <Link to={`/product/${product.id}`}>
           <img
@@ -41,7 +41,7 @@ export function ProductCard({ product, onAddToCart, variant = 'default' }: Produ
         )}
       </div>
 
-      <div className="p-3">
+      <div className="p-3 flex flex-col flex-1">
         <Link to={`/product/${product.id}`}>
           <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem] text-sm hover:text-blue-600 transition">
             {product.title}
@@ -64,7 +64,7 @@ export function ProductCard({ product, onAddToCart, variant = 'default' }: Produ
         
         <Button
           onClick={() => onAddToCart(product)}
-          className="w-full flex items-center justify-center gap-1.5 py-1.5 text-sm"
+          className="w-full flex items-center justify-center gap-1.5 py-1.5 text-sm mt-auto"
         >
           <BsCartPlus size={16} />
           Adicionar
