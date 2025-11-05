@@ -6,7 +6,8 @@ import { Button } from "../../components/Button";
 import toast from "react-hot-toast";
 
 export function Cart() {
-  const { cart, removeItemCart, updateQuantity, clearCart, total } = useContext(CartContext);
+  const { cart, removeItemCart, updateQuantity, clearCart, total } =
+    useContext(CartContext);
 
   const shipping = 50.0;
   const discount = 0;
@@ -18,89 +19,23 @@ export function Cart() {
   }, [total, shipping, discount]);
 
   const handleRemoveItem = useCallback(
-    (id: number, title: string) => {
-      toast.dismiss();
-
-      setTimeout(() => {
-        toast(
-          (t) => (
-            <div className="flex flex-col gap-3 min-w-[280px]">
-              <div>
-                <p className="font-semibold text-gray-900">
-                  Remover do carrinho?
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  Deseja remover "<strong>{title}</strong>"?
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    removeItemCart(id);
-                    toast.dismiss(t.id);
-                    toast.success("Produto removido!");
-                  }}
-                  className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition touchscreen:active:scale-95"
-                >
-                  Remover
-                </button>
-                <button
-                  onClick={() => toast.dismiss(t.id)}
-                  className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium transition touchscreen:active:scale-95"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </div>
-          ),
-          {
-            duration: Infinity,
-            position: "top-center",
-          }
-        );
-      }, 100);
+    (id: number) => {
+      removeItemCart(id);
+      toast.success("Produto removido do carrinho!", {
+        duration: 3000,
+        position: "top-center",
+      });
     },
     [removeItemCart]
   );
 
   const handleClearCart = useCallback(() => {
-    toast.dismiss();
-
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-3">
-          <div>
-            <p className="font-semibold text-gray-900">Limpar carrinho?</p>
-            <p className="text-sm text-gray-600 mt-1">
-              Todos os {cart.length} produtos serão removidos.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                clearCart();
-                toast.dismiss(t.id);
-                toast.success("Carrinho limpo!");
-              }}
-              className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium transition"
-            >
-              Limpar tudo
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="flex-1 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium transition"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: 10000,
-        position: "top-center",
-      }
-    );
-  }, [clearCart, cart.length]);
+    clearCart();
+    toast.success("Carrinho limpo com sucesso!", {
+      duration: 3000,
+      position: "top-center",
+    });
+  }, [clearCart]);
 
   if (cart.length === 0) {
     return (
@@ -219,7 +154,7 @@ export function Cart() {
                           R$ {(item.price * item.amount).toFixed(2)}
                         </p>
                         <button
-                          onClick={() => handleRemoveItem(item.id, item.title)}
+                          onClick={() => handleRemoveItem(item.id)}
                           className="cursor-pointer text-red-500 hover:text-red-700 hover:bg-red-50 transition p-2 rounded-lg"
                           title="Remover produto"
                           aria-label="Remover produto"

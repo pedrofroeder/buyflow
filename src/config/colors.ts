@@ -1,5 +1,3 @@
-// src/config/colors.ts
-
 export const colors = {
   primary: {
     bg: "bg-blue-600",

@@ -28,7 +28,10 @@ export function Home() {
   const handleAddToCart = useCallback(
     (product: Product) => {
       addItemCart(product);
-      toast.success(`${product.title} adicionado ao carrinho!`);
+      toast.success(`${product.title} adicionado ao carrinho!`, {
+        duration: 3000,
+        position: "top-center",
+      });
     },
     [addItemCart]
   );
